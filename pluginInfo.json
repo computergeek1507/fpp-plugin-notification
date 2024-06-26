@@ -1,0 +1,20 @@
+{
+	"repoName": "fpp-plugin-notification",
+	"name": "Notification Plugin for FPP",
+	"author": "Scott Hanson (computergeek1507)",
+	"description": "This Plugin Listens for Warnings and sends notification to 3rd Party Services.",
+	"homeURL": "https://github.com/computergeek1507/fpp-plugin-notification",
+	"srcURL": "https://github.com/computergeek1507/fpp-plugin-notification.git",
+	"bugURL": "https://github.com/computergeek1507/fpp-plugin-notification/issues",
+	"allowUpdates": 1,
+	"versions": [
+		{
+			"minFPPVersion": "7.0",
+			"maxFPPVersion": "0",
+			"branch": "main",
+			"sha": "",
+			"dependencies": {
+			}
+		}
+	]
+}
