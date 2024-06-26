@@ -1,23 +1,16 @@
 #pragma once
 
-#include "openHABItem.h"
+#include "notificationBase.h"
 
 #include <string>
 
-class openHABSwitch : public openHABItem{
+class pushbullet : public notificationBase{
 public:
-    openHABSwitch(std::string const& ip, uint16_t port, std::string const& item, unsigned int startChannel );
-    virtual ~openHABSwitch();
-
-    bool SendData( unsigned char *data) override;
-
-    void setSwitchOn();
-    void setSwitchOff();
+    pushbullet(std::string const& ip );
+    virtual ~pushbullet();
 
     std::string GetType() const override {return "Switch";}
 
 private:
-    uint8_t m_w;
-    void outputData( uint8_t w );
 
 };

@@ -34,9 +34,9 @@
 
 #include "commands/Commands.h"
 
-#include "openHABLight.h"
-#include "openHABSwitch.h"
-#include "openHABItem.h"
+#include "notificationBase.h"
+#include "pushover.h"
+//#include "openHABItem.h"
 
 class NotificationPlugin : public FPPPlugin {
 private:

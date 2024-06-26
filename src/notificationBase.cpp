@@ -1,16 +1,11 @@
-#include "openHABItem.h"
+#include "notificationBase.h"
 
 #include <stdlib.h>
 #include <cstdint>
 #include <thread>
 #include <cmath>
 
-openHABItem::openHABItem(std::string const& ip, uint16_t port, std::string const& item, unsigned int startChannel) :
-    m_ipAddress(ip),
-    m_item(item),
-    m_port(port),
-    m_startChannel(startChannel),
-    m_seqCount(0),
+notificationBase::notificationBase() :
     m_unreachable(false),
     m_issending(false),
     m_curl(nullptr)
@@ -18,13 +13,13 @@ openHABItem::openHABItem(std::string const& ip, uint16_t port, std::string const
     m_curl = curl_easy_init();
 }
 
-openHABItem::~openHABItem() {
+notificationBase::~notificationBase() {
     if (m_curl) {
         curl_easy_cleanup(m_curl);
     }
 }
 
-void openHABItem::sendCmd(std::string const& message) {
+void notificationBase::sendCmd(std::string const& message) {
     try {
        //curl -X POST --header "Content-Type: text/plain" --header "Accept: application/json" -d "OFF" "http://{openHAB_IP}:8080/rest/items/My_Item"
         std::string repURL = "http://" + m_ipAddress + ":" + std::to_string(m_port) + "/rest/items/" + m_item ;//+ "/state";
