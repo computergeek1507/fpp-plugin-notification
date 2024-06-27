@@ -23,6 +23,7 @@
 #include "Plugin.h"
 #include "Plugins.h"
 #include "log.h"
+#include "Warnings.h"
 
 //#if __has_include("channeloutput/ChannelOutputSetup.h")
 #include "channeloutput/ChannelOutputSetup.h"
@@ -36,18 +37,59 @@
 
 #include "notificationBase.h"
 #include "pushover.h"
-//#include "openHABItem.h"
+
+class NotificationWarningListener : public WarningListener {
+public:
+    NotificationWarningListener(std::function<void(std::list<std::string>&)> callback): m_callback(callback)  {}
+    virtual ~NotificationWarningListener() {}
+
+    virtual void handleWarnings(std::list<std::string>& warnings) {
+        if(m_callback)
+        {
+            m_callback(warnings);
+        }
+    }
+    std::function<void(std::list<std::string>&)> m_callback;
+};
+
+static NotificationWarningListener* NOTIFICATION_WARNING_LISTENER = nullptr;
+
 
 class NotificationPlugin : public FPPPlugin {
 public:
-    std::vector<std::unique_ptr<NotificationBase>> notification_services;
+    std::vector<std::unique_ptr<NotificationBase>> m_notification_services;
+
+    std::list<std::string> m_warnings;
 
     NotificationPlugin() : FPPPlugin("fpp-plugin-notification") {
         LogInfo(VB_PLUGIN, "Initializing Notification Plugin\n");
         registerCommand();
         ReadSettings();
+
+        auto add_warnings{ [this](std::list<std::string>& warnings) mutable {
+            m_warnings = warnings;
+            ReadWarnings();
+        } };
+
+        if (NOTIFICATION_WARNING_LISTENER == nullptr) {
+            NOTIFICATION_WARNING_LISTENER = new NotificationWarningListener(add_warnings);
+            WarningHolder::AddWarningListener(NOTIFICATION_WARNING_LISTENER);
+        }
     }
     virtual ~NotificationPlugin() {
+        if (NOTIFICATION_WARNING_LISTENER != nullptr) {
+            WarningHolder::RemoveWarningListener(NOTIFICATION_WARNING_LISTENER);
+            delete NOTIFICATION_WARNING_LISTENER;
+            NOTIFICATION_WARNING_LISTENER = nullptr;
+        }
+    }
+
+    void ReadWarnings() 
+    {
+        for(auto const& warning : m_warnings)
+        {
+            SendMessage(warning);
+        }
     }
 
     void ReadSettings() {
@@ -62,7 +104,7 @@ public:
                 if (root.isMember("pushover")) {
                    std::string token = root["pushover"]["token"].asString();
                    std::string user = root["pushover"]["user"].asString();
-                   notification_services.emplace_back(std::make_unique<Pushover>(token, user));
+                   m_notification_services.emplace_back(std::make_unique<Pushover>(token, user));
                    LogInfo(VB_PLUGIN, "Added Pushover Service\n");
                 }
                 
@@ -152,7 +194,6 @@ public:
         CommandManager::INSTANCE.addCommand(new SendMessageCommand(this));
     }
 
-
     virtual void modifySequenceData(int ms, uint8_t *seqData) override {
         try
         {
@@ -195,7 +236,7 @@ public:
 
     void SendMessage(std::string const& message) {
 
-        std::for_each(std::execution::par, std::begin(notification_services), std::end(notification_services), [message](auto& service) {
+        std::for_each(std::execution::par, std::begin(m_notification_services), std::end(m_notification_services), [message](auto& service) {
             service->SendMessage(message);
         });
     }
