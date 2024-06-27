@@ -39,19 +39,45 @@
 //#include "openHABItem.h"
 
 class NotificationPlugin : public FPPPlugin {
-private:
-
 public:
+    std::vector<std::unique_ptr<NotificationBase>> notification_services;
+
     NotificationPlugin() : FPPPlugin("fpp-plugin-notification") {
         LogInfo(VB_PLUGIN, "Initializing Notification Plugin\n");
         registerCommand();
+        ReadSettings();
     }
     virtual ~NotificationPlugin() {
     }
 
+    void ReadSettings() {
+        if (FileExists(FPP_DIR_CONFIG("/plugin.notification.json"))) {
+            try {
+                Json::Value root;
+                bool success =  LoadJsonFromFile(FPP_DIR_CONFIG("/plugin.notification.json"), root);
+                if(!success){
+                    return;
+                }
+
+                if (root.isMember("pushover")) {
+                   std::string token = root["pushover"]["token"].asString();
+                   std::string user = root["pushover"]["user"].asString();
+                   notification_services.emplace_back(std::make_unique<Pushover>(token, user));
+                   LogInfo(VB_PLUGIN, "Added Pushover Service\n");
+                }
+                
+                LogInfo(VB_PLUGIN, "Notification Started\n");
+            } catch (...) {
+                LogErr(VB_PLUGIN, "Could not Read Notification Plugin JSON\n");
+            }                
+        }else{
+            LogInfo(VB_PLUGIN, "No plugin.notification.json config file found\n");
+        }
+    }
+
     class SendEmailCommand : public Command {
     public:
-        SendEmailCommand(openHABPlugin *p) : Command("Notification Send Email"), plugin(p) {
+        SendEmailCommand(NotificationPlugin *p) : Command("Notification Send Email"), plugin(p) {
             args.push_back(CommandArg("Recipient", "string", "Recipient Email Address"));
             args.push_back(CommandArg("Subject", "string", "Email Subject"));
             args.push_back(CommandArg("Message", "string", "Email Message"));
@@ -71,15 +97,59 @@ public:
                 message = args[2];
             }
             //plugin->SetSwitchState(ipAddress, port, item, bulbOn);
-            return std::make_unique<Command::Result>("openHAB Switch Set");
+            return std::make_unique<Command::Result>("Email Sent");
         }
         NotificationPlugin *plugin;
     };
 
-    
+    class SendPushoverCommand : public Command {
+    public:
+        SendPushoverCommand(NotificationPlugin *p) : Command("Notification Send Pushover"), plugin(p) {
+            args.push_back(CommandArg("Token", "string", "App Token Key"));
+            args.push_back(CommandArg("User", "string", "User Key"));
+            args.push_back(CommandArg("Message", "string", "Message"));
+        }
+        
+        virtual std::unique_ptr<Command::Result> run(const std::vector<std::string> &args) override {
+            std::string token = "";
+            std::string user = "";
+            std::string message = "";
+             if (args.size() >= 1) {
+                token = args[0];
+            }
+            if (args.size() >= 2) {
+                user = args[1];
+            }
+            if (args.size() >= 3) {
+                message = args[2];
+            }
+            plugin->SendPushover(token, user, message);
+            return std::make_unique<Command::Result>("Pushover Sent");
+        }
+        NotificationPlugin *plugin;
+    };
+
+    class SendMessageCommand : public Command {
+    public:
+        SendMessageCommand(NotificationPlugin *p) : Command("Notification Send Message"), plugin(p) {
+            args.push_back(CommandArg("Message", "string", "Message"));
+        }
+        
+        virtual std::unique_ptr<Command::Result> run(const std::vector<std::string> &args) override {
+            std::string message = "";
+             if (args.size() >= 1) {
+                message = args[0];
+            }           
+            plugin->SendMessage( message);
+            return std::make_unique<Command::Result>("Message Sent");
+        }
+        NotificationPlugin *plugin;
+    };
 
     void registerCommand() {
-        CommandManager::INSTANCE.addCommand(new openHABSetSwitchCommand(this));
+        CommandManager::INSTANCE.addCommand(new SendEmailCommand(this));
+        CommandManager::INSTANCE.addCommand(new SendPushoverCommand(this));
+        CommandManager::INSTANCE.addCommand(new SendMessageCommand(this));
     }
 
 
@@ -100,9 +170,11 @@ public:
         }  
     }
 
-    void SetSwitchState(std::string const& ip, uint16_t port, std::string const& item, bool state) {
+    void SendPushover(std::string const& token, std::string const& user, std::string const& message) {
 
-        auto SetSwState = [ip,port,state](std::string const& __item)
+        Pushover push(token, user);
+        push.SendMessage(message);
+        /*auto SetSwState = [ip,port,state](std::string const& __item)
         {
             openHABSwitch openSwitch(ip, port, __item, 1);
             if(state){
@@ -118,7 +190,14 @@ public:
             }
         } else {
             SetSwState(item);
-        }
+        }*/
+    }
+
+    void SendMessage(std::string const& message) {
+
+        std::for_each(std::execution::par, std::begin(notification_services), std::end(notification_services), [message](auto& service) {
+            service->SendMessage(message);
+        });
     }
 };
 

@@ -3,7 +3,7 @@ include /opt/fpp/src/makefiles/common/setup.mk
 all: libfpp-plugin-notification.so
 debug: all
 
-OBJECTS_fpp_notification_so += src/NotificationPlugin.o src/notificationBase.o src/pushover.o src/pushbullet.o src/email.o src/telegram.o
+OBJECTS_fpp_notification_so += src/NotificationPlugin.o src/notificationBase.o src/pushover.o src/email.o src/telegram.o
 LIBS_fpp_notification_so += -L/opt/fpp/src -lfpp
 CXXFLAGS_src/openHABPlugin.o += -I/opt/fpp/src
 

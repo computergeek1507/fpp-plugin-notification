@@ -2,13 +2,17 @@
 
 #include "notificationBase.h"
 
-class pushover : public notificationBase{
+class Pushover : public NotificationBase{
 public:
-    pushover(std::string const& key );
-    virtual ~pushover();
+    Pushover(std::string const& token, std::string const& user );
+    virtual ~Pushover();
 
+    std::string GetType() const override {return "Pushover";}
 
+    bool SendMessage(std::string const& message) override;
 
 private:
+std::string const& m_token;
+std::string const& m_user;
 
 };

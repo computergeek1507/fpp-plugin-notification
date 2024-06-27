@@ -4,12 +4,11 @@
 #include <thread>
 #include <cmath>
 
-telegram::telegram(std::string const& ip, std::string const& item) :
-    notificationBase(),
-
+Telegram::Telegram(std::string const& ip, std::string const& item) :
+    NotificationBase()
 {
 }
 
-telegram::~telegram() {
+Telegram::~Telegram() {
 
 }

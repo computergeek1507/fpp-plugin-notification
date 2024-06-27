@@ -5,7 +5,7 @@
 #include <thread>
 #include <cmath>
 
-notificationBase::notificationBase() :
+NotificationBase::NotificationBase() :
     m_unreachable(false),
     m_issending(false),
     m_curl(nullptr)
@@ -13,16 +13,16 @@ notificationBase::notificationBase() :
     m_curl = curl_easy_init();
 }
 
-notificationBase::~notificationBase() {
+NotificationBase::~NotificationBase() {
     if (m_curl) {
         curl_easy_cleanup(m_curl);
     }
 }
 
-void notificationBase::sendCmd(std::string const& message) {
+void NotificationBase::sendCmd(std::string const& message) {
     try {
        //curl -X POST --header "Content-Type: text/plain" --header "Accept: application/json" -d "OFF" "http://{openHAB_IP}:8080/rest/items/My_Item"
-        std::string repURL = "http://" + m_ipAddress + ":" + std::to_string(m_port) + "/rest/items/" + m_item ;//+ "/state";
+        /*std::string repURL = "http://" + m_ipAddress + ":" + std::to_string(m_port) + "/rest/items/" + m_item ;//+ "/state";
         LogInfo(VB_PLUGIN, "URL %s \n", repURL.c_str());
         curl_easy_setopt(m_curl, CURLOPT_TIMEOUT, 5L);
         curl_easy_setopt(m_curl, CURLOPT_URL, repURL.c_str());
@@ -39,7 +39,7 @@ void notificationBase::sendCmd(std::string const& message) {
         if (status != CURLE_OK) {
             m_unreachable = true;
             LogInfo(VB_PLUGIN, "failed to send curl command\n");
-        }
+        }*/
     }
     catch(std::exception const& ex) {
         LogInfo(VB_PLUGIN, "Error %s \n", ex.what());

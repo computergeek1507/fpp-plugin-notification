@@ -9,14 +9,16 @@
 
 #include <curl/curl.h>
 
-class notificationBase {
+class NotificationBase {
 public:
-    notificationBase( );
-    virtual ~notificationBase();
+    NotificationBase( );
+    virtual ~NotificationBase();
 
    
 
     virtual std::string GetType() const = 0;
+
+    virtual bool SendMessage(std::string const& message) = 0;
 
 protected:
 

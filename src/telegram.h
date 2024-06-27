@@ -2,13 +2,13 @@
 
 #include "notificationBase.h"
 
-class telegram : public notificationBase{
+class Telegram : public NotificationBase{
 public:
-    telegram(std::string const& key, std::string const& clientID );
-    virtual ~telegram();
+    Telegram(std::string const& key, std::string const& clientID );
+    virtual ~Telegram();
 
 
-    std::string GetType() const override {return "Light";}
+    std::string GetType() const override {return "Telegram";}
 
 private:
 
