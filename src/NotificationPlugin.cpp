@@ -37,6 +37,7 @@
 
 #include "notificationBase.h"
 #include "pushover.h"
+#include "telegram.h"
 
 class NotificationWarningListener : public WarningListener {
 public:
@@ -105,11 +106,18 @@ public:
                     
                    std::string token = root["pushover"]["token"].asString();
                    std::string user = root["pushover"]["user"].asString();
-                    LogInfo(VB_PLUGIN, "token %s \n", token.c_str());
-                    LogInfo(VB_PLUGIN, "user %s \n", user.c_str());
                    if(!token.empty() && !user.empty()){
                     m_notification_services.push_back(std::move(std::make_unique<Pushover>(token, user)));
                     LogInfo(VB_PLUGIN, "Added Pushover Service\n");
+                   }
+                }
+                if (root.isMember("telegram")) {
+                    
+                   std::string bottoken = root["telegram"]["bottoken"].asString();
+                   std::string chatid = root["telegram"]["chatid"].asString();
+                   if(!bottoken.empty() && !chatid.empty()){
+                    m_notification_services.push_back(std::move(std::make_unique<Telegram>(bottoken, chatid)));
+                    LogInfo(VB_PLUGIN, "Added Telegram Service\n");
                    }
                 }
                 

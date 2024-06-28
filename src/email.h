@@ -9,7 +9,12 @@ public:
 
     std::string GetType() const override {return "Email";}
 
-
+    bool SendMessage(std::string const& message) override;
 private:
+
+std::string const& m_server;
+uint16_t m_port{587};
+std::string const& m_username;
+std::string const& m_password;
 
 };
