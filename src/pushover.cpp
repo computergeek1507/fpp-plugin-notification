@@ -46,7 +46,11 @@ bool Pushover::SendMessage(std::string const& message)
        //post_fields = curl_slist_append(post_fields, std::string("message=" + message).c_str());
        //curl_easy_setopt(m_curl, CURLOPT_POSTFIELDS, post_fields);
        // headers = curl_slist_append(headers, "Content-Type: text/plain");
+       LogInfo(VB_PLUGIN, "m_token %s \n", m_token.c_str());
+       LogInfo(VB_PLUGIN, "m_user %s \n", m_user.c_str());
+       LogInfo(VB_PLUGIN, "message %s \n", message.c_str());
         std::string postmsg = "token=" + m_token + "&user=" + m_user + "&message=" + message;
+        LogInfo(VB_PLUGIN, "postmsg %s \n", postmsg.c_str());
         curl_easy_setopt(m_curl, CURLOPT_POSTFIELDS, postmsg.c_str());
        // curl_easy_setopt(m_curl, CURLOPT_HTTPHEADER, headers); 
 

@@ -52,7 +52,7 @@ public:
     std::function<void(std::list<std::string>&)> m_callback;
 };
 
-static NotificationWarningListener* NOTIFICATION_WARNING_LISTENER = nullptr;
+//static NotificationWarningListener* NOTIFICATION_WARNING_LISTENER = nullptr;
 
 
 class NotificationPlugin : public FPPPlugin {
@@ -71,17 +71,17 @@ public:
             ReadWarnings();
         } };
 
-        if (NOTIFICATION_WARNING_LISTENER == nullptr) {
-            NOTIFICATION_WARNING_LISTENER = new NotificationWarningListener(add_warnings);
-            WarningHolder::AddWarningListener(NOTIFICATION_WARNING_LISTENER);
-        }
+       // if (NOTIFICATION_WARNING_LISTENER == nullptr) {
+        //    NOTIFICATION_WARNING_LISTENER = new NotificationWarningListener(add_warnings);
+        //    WarningHolder::AddWarningListener(NOTIFICATION_WARNING_LISTENER);
+       // }
     }
     virtual ~NotificationPlugin() {
-        if (NOTIFICATION_WARNING_LISTENER != nullptr) {
-            WarningHolder::RemoveWarningListener(NOTIFICATION_WARNING_LISTENER);
-            delete NOTIFICATION_WARNING_LISTENER;
-            NOTIFICATION_WARNING_LISTENER = nullptr;
-        }
+       // if (NOTIFICATION_WARNING_LISTENER != nullptr) {
+        //    WarningHolder::RemoveWarningListener(NOTIFICATION_WARNING_LISTENER);
+       //    delete NOTIFICATION_WARNING_LISTENER;
+       //     NOTIFICATION_WARNING_LISTENER = nullptr;
+       // }
     }
 
     void ReadWarnings() 
@@ -102,10 +102,15 @@ public:
                 }
 
                 if (root.isMember("pushover")) {
+                    
                    std::string token = root["pushover"]["token"].asString();
                    std::string user = root["pushover"]["user"].asString();
-                   m_notification_services.emplace_back(std::make_unique<Pushover>(token, user));
-                   LogInfo(VB_PLUGIN, "Added Pushover Service\n");
+                    LogInfo(VB_PLUGIN, "token %s \n", token.c_str());
+                    LogInfo(VB_PLUGIN, "user %s \n", user.c_str());
+                   if(!token.empty() && !user.empty()){
+                    m_notification_services.push_back(std::move(std::make_unique<Pushover>(token, user)));
+                    LogInfo(VB_PLUGIN, "Added Pushover Service\n");
+                   }
                 }
                 
                 LogInfo(VB_PLUGIN, "Notification Started\n");
@@ -235,10 +240,13 @@ public:
     }
 
     void SendMessage(std::string const& message) {
-
-        std::for_each(std::execution::par, std::begin(m_notification_services), std::end(m_notification_services), [message](auto& service) {
+        for(auto const& service : m_notification_services)
+        {
             service->SendMessage(message);
-        });
+        }
+        //std::for_each(std::execution::par, std::begin(m_notification_services), std::end(m_notification_services), [message](auto& service) {
+        //    service->SendMessage(message);
+        //});
     }
 };
 

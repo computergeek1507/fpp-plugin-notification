@@ -13,6 +13,12 @@
 
 $menuEntries = Array(
 	Array(
+		'text' => 'Notification - Configuration',
+		'type' => 'output',
+		'page' => 'plugin_setup.php',
+		'wrap' => 1
+	),
+	Array(
 		'text' => 'Notification - About',
 		'type' => 'help',
 		'page' => 'about.php',

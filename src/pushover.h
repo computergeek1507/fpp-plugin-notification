@@ -12,7 +12,7 @@ public:
     bool SendMessage(std::string const& message) override;
 
 private:
-std::string const& m_token;
-std::string const& m_user;
+std::string m_token;
+std::string m_user;
 
 };
